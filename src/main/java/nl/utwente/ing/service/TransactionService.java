@@ -1,10 +1,10 @@
 package nl.utwente.ing.service;
 
-import nl.utwente.ing.models.Category;
-import nl.utwente.ing.models.transaction.Transaction;
+import nl.utwente.ing.model.Category;
+import nl.utwente.ing.model.transaction.Transaction;
 
 import java.util.List;
 
-public interface SpringService {
+public interface TransactionService {
     List<Transaction> getAllTransactions(int offset, int limit, Category category);
 }

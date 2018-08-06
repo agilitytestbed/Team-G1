@@ -3,12 +3,12 @@ package nl.utwente.ing.controllers;
 import nl.utwente.ing.repository.CategoryRepository;
 import nl.utwente.ing.repository.SessionRepository;
 import nl.utwente.ing.repository.TransactionRepository;
-import nl.utwente.ing.service.TransactionService;
+import nl.utwente.ing.service.TransactionServiceImpl;
 import nl.utwente.ing.exception.InvalidSessionIdException;
 import nl.utwente.ing.exception.NoSuchIdForTransactionException;
-import nl.utwente.ing.models.Category;
-import nl.utwente.ing.models.Session;
-import nl.utwente.ing.models.transaction.Transaction;
+import nl.utwente.ing.model.Category;
+import nl.utwente.ing.model.Session;
+import nl.utwente.ing.model.transaction.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,11 +25,11 @@ public class TransactionController {
 
     private SessionRepository sessionRepo;
 
-    private TransactionService transactionServ;
+    private TransactionServiceImpl transactionServ;
 
     @Autowired
     public TransactionController(TransactionRepository transactionRepo, CategoryRepository categoryRepo,
-                                 SessionRepository sessionRepo, TransactionService transactionServ) {
+                                 SessionRepository sessionRepo, TransactionServiceImpl transactionServ) {
         this.transactionRepo = transactionRepo;
         this.categoryRepo = categoryRepo;
         this.sessionRepo = sessionRepo;

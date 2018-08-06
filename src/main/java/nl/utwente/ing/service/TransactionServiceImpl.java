@@ -2,8 +2,8 @@ package nl.utwente.ing.service;
 
 import nl.utwente.ing.repository.CategoryRepository;
 import nl.utwente.ing.repository.TransactionRepository;
-import nl.utwente.ing.models.Category;
-import nl.utwente.ing.models.transaction.Transaction;
+import nl.utwente.ing.model.Category;
+import nl.utwente.ing.model.transaction.Transaction;
 import nl.utwente.ing.utils.filter.OffsetLimitAndSortFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class TransactionService implements SpringService{
+public class TransactionServiceImpl implements TransactionService {
 
     @Autowired
     private CategoryRepository categoryRepo;
@@ -24,7 +24,7 @@ public class TransactionService implements SpringService{
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public TransactionService(TransactionRepository transactionRepo, JdbcTemplate jdbcTemplate) {
+    public TransactionServiceImpl(TransactionRepository transactionRepo, JdbcTemplate jdbcTemplate) {
         this.transactionRepo = transactionRepo;
         this.jdbcTemplate = jdbcTemplate;
     }
