@@ -1,14 +1,22 @@
-package nl.utwente.ing.models;
+package nl.utwente.ing.model.transaction;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
+import nl.utwente.ing.repository.CategoryRepository;
+import nl.utwente.ing.model.Category;
+import nl.utwente.ing.model.Session;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.persistence.*;
-import java.time.OffsetDateTime;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+@Component
 @Entity
 public class Transaction {
 
@@ -18,7 +26,7 @@ public class Transaction {
     private long id;
 
     @Column
-    private OffsetDateTime date;
+    private LocalDateTime date;
 
     @Column
     private double amount;
@@ -40,7 +48,17 @@ public class Transaction {
     public Transaction() {
     }
 
-    public Transaction(OffsetDateTime date, double amount, String externalIBAN, Type type, Category category) {
+    public Transaction(LocalDateTime date, double amount, String externalIBAN, Type type, Category category) {
+        this.date = date;
+        this.amount = amount;
+        this.externalIBAN = externalIBAN;
+        this.type = type;
+        this.category = category;
+        this.session = new HashSet<>();
+    }
+
+    public Transaction(long id, LocalDateTime date, double amount, String externalIBAN, Type type, Category category) {
+        this.id = id;
         this.date = date;
         this.amount = amount;
         this.externalIBAN = externalIBAN;
@@ -57,7 +75,7 @@ public class Transaction {
         this.session = session;
     }
 
-    public void setSession(Session session){
+    public void setSession(Session session) {
         this.session.add(session);
     }
 
@@ -77,11 +95,11 @@ public class Transaction {
         this.id = id;
     }
 
-    public OffsetDateTime getDate() {
+    public LocalDateTime getDate() {
         return date;
     }
 
-    public void setDate(OffsetDateTime date) {
+    public void setDate(LocalDateTime date) {
         this.date = date;
     }
 
@@ -161,4 +179,25 @@ public class Transaction {
         }
     }
 
+    @Component
+    public static class RowMapper implements org.springframework.jdbc.core.RowMapper<Transaction> {
+
+        private CategoryRepository categoryRepo;
+
+        @Autowired
+        public RowMapper(CategoryRepository categoryRepo) {
+            this.categoryRepo = categoryRepo;
+        }
+
+        @Override
+        public Transaction mapRow(ResultSet rs, int i) throws SQLException {
+            return new Transaction(rs.getInt("tid"),
+                    LocalDateTime.parse(rs.getString("date")
+                            .replaceAll(" ", "T")),
+                    rs.getFloat("amount"),
+                    rs.getString("externalIBAN"),
+                    Type.values()[rs.getInt("type")],
+                    categoryRepo.findById(rs.getLong("category")).get());
+        }
+    }
 }
