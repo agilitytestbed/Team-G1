@@ -1,22 +1,72 @@
 package nl.utwente.ing.models;
 
-import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonValue;
 
+import javax.persistence.*;
+import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
+@Entity
 public class Transaction {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "tid", updatable = false)
     private long id;
-    private String date;
-    private float amount;
+
+    @Column
+    private OffsetDateTime date;
+
+    @Column
+    private double amount;
+
+    @Column
     private String externalIBAN;
-    private String type;
+
+    @Column
+    private Type type;
+
+    @ManyToOne//(fetch=FetchType.LAZY)
+    @JoinColumn(name = "category", nullable = false)
     private Category category;
 
-    public Transaction(long id, String date, float amount, String externalIBAN, String type, Category category) {
-        this.id = id;
+    @JsonIgnore
+    @ManyToMany(mappedBy = "transactions")
+    private Set<Session> session;
+
+    public Transaction() {
+    }
+
+    public Transaction(OffsetDateTime date, double amount, String externalIBAN, Type type, Category category) {
         this.date = date;
         this.amount = amount;
         this.externalIBAN = externalIBAN;
         this.type = type;
         this.category = category;
+        this.session = new HashSet<>();
+    }
+
+    public Set<Session> getSession() {
+        return session;
+    }
+
+    public void setSession(Set<Session> session) {
+        this.session = session;
+    }
+
+    public void setSession(Session session){
+        this.session.add(session);
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
     }
 
     public long getId() {
@@ -27,19 +77,19 @@ public class Transaction {
         this.id = id;
     }
 
-    public String getDate() {
+    public OffsetDateTime getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(OffsetDateTime date) {
         this.date = date;
     }
 
-    public float getAmount() {
+    public double getAmount() {
         return amount;
     }
 
-    public void setAmount(float amount) {
+    public void setAmount(double amount) {
         this.amount = amount;
     }
 
@@ -80,7 +130,7 @@ public class Transaction {
         }
         Transaction that = (Transaction) o;
         return id == that.id &&
-                Float.compare(that.amount, amount) == 0 &&
+                Double.compare(that.amount, amount) == 0 &&
                 Objects.equals(date, that.date) &&
                 Objects.equals(externalIBAN, that.externalIBAN) &&
                 Objects.equals(category, that.category);
@@ -90,4 +140,25 @@ public class Transaction {
     public int hashCode() {
         return Objects.hash(id, date, amount, externalIBAN, category);
     }
+
+    public enum Type {
+        DEPOSIT("deposit"),
+        WITHDRAWAL("withdrawal");
+
+        private String name;
+
+        Type(String name) {
+            this.name = name;
+        }
+
+        @JsonValue
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
+
 }
