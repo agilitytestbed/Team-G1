@@ -4,7 +4,7 @@ import nl.utwente.ing.repository.CategoryRepository;
 import nl.utwente.ing.repository.TransactionRepository;
 import nl.utwente.ing.model.Category;
 import nl.utwente.ing.model.transaction.Transaction;
-import nl.utwente.ing.utils.filter.OffsetLimitAndSortFilter;
+import nl.utwente.ing.util.filter.OffsetLimitAndSortFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Pageable;
