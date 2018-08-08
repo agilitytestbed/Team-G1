@@ -1,7 +1,7 @@
 package nl.utwente.ing.util.filter;
 
-import nl.utwente.ing.exception.InvalidLimitException;
-import nl.utwente.ing.exception.InvalidOffsetException;
+import nl.utwente.ing.exception.transaction.InvalidLimitException;
+import nl.utwente.ing.exception.transaction.InvalidOffsetException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import java.io.Serializable;
@@ -17,7 +17,7 @@ public class OffsetLimitAndSortFilter implements Pageable, Serializable {
     private final Sort sort;
 
 
-    public OffsetLimitAndSortFilter(long offset, int limit, Sort sort) {
+    private OffsetLimitAndSortFilter(long offset, int limit, Sort sort) {
         if (offset < 0) {
             throw new InvalidOffsetException();
         }
@@ -63,7 +63,7 @@ public class OffsetLimitAndSortFilter implements Pageable, Serializable {
         return new OffsetLimitAndSortFilter(getOffset() + getPageSize(), getPageSize(), getSort());
     }
 
-    public OffsetLimitAndSortFilter previous() {
+    private OffsetLimitAndSortFilter previous() {
         return hasPrevious() ?
                new OffsetLimitAndSortFilter(getOffset() - getPageSize(), getPageSize(), getSort())
                              : this;

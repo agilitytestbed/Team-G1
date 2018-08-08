@@ -1,4 +1,4 @@
-package nl.utwente.ing.exception;
+package nl.utwente.ing.exception.transaction;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

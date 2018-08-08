@@ -1,11 +1,11 @@
 package nl.utwente.ing.controllers;
 
+import nl.utwente.ing.exception.transaction.TransactionNotFoundException;
 import nl.utwente.ing.repository.CategoryRepository;
 import nl.utwente.ing.repository.SessionRepository;
 import nl.utwente.ing.repository.TransactionRepository;
 import nl.utwente.ing.service.TransactionServiceImpl;
-import nl.utwente.ing.exception.InvalidSessionIdException;
-import nl.utwente.ing.exception.NoSuchIdForTransactionException;
+import nl.utwente.ing.exception.transaction.InvalidSessionIdException;
 import nl.utwente.ing.model.Category;
 import nl.utwente.ing.model.Session;
 import nl.utwente.ing.model.transaction.Transaction;
@@ -13,7 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -46,7 +49,45 @@ public class TransactionController {
                                  @RequestParam(value = "category", required = false) Category category,
                                  @RequestParam(value = "session_id", required = false) Session sessionId,
                                  @RequestHeader(value = "X-session-ID", required = false) Session headerSessionID){
-        log.info("'GET /transactions' has been requested...");
+        log.info("'GET /transactions' has been requested ...");
+        verifySessionId(sessionId, headerSessionID);
+        List<Transaction> transactions = transactionServ.findByCategoryWithOffsetAndLimit(offset, limit, category);
+        for (Transaction tr: transactions){
+            log.info(tr.toString());
+        }
+        log.info("The 'GET /transactions' response has been sent !");
+        return transactions;
+    }
+
+    @RequestMapping(value = "/transactions/{transactionId}", method = RequestMethod.PUT)
+    public Transaction doPutTransaction(@PathVariable Long transactionId, @RequestBody Transaction requestTransaction,
+                                 @RequestParam(value = "session_id", required = false) Session sessionId,
+                                 @RequestHeader(value = "X-session-ID", required = false) Session headerSessionID){
+
+        log.info("'PUT /transactions/{" + transactionId + "}' has been requested ...");
+        verifySessionId(sessionId, headerSessionID);
+        RuntimeException transactionNotFound = new TransactionNotFoundException();
+        if (transactionId == null){
+            throw transactionNotFound;
+        }
+        if (transactionRepo.findById(transactionId).isPresent()){
+            Transaction repoTransaction = transactionRepo.findById(transactionId).get();
+            Category requestCategory = requestTransaction.getCategory();
+            requestTransaction.setCategory(requestCategory == null || !categoryRepo.existsById(requestCategory.getId())
+                    ? repoTransaction.getCategory() : requestCategory);
+            requestTransaction.setId(repoTransaction.getId());
+            return transactionRepo.save(requestTransaction);
+        } else{
+            throw transactionNotFound;
+        }
+    }
+
+    @ExceptionHandler(value = HttpMessageNotReadableException.class)
+    @ResponseStatus(value = HttpStatus.METHOD_NOT_ALLOWED, reason = "Invalid input given")
+    public void handleInvalidFormatException() {
+    }
+
+    private void verifySessionId(Session sessionId, Session headerSessionID) {
         RuntimeException invalidSession = new InvalidSessionIdException();
         if (sessionId == null && headerSessionID == null){
             log.warn("No sessionId provided !");
@@ -61,30 +102,10 @@ public class TransactionController {
             throw invalidSession;
         }
         if (sessionId != null && !sessionRepo.exists(Example.of(sessionId))
-                              && headerSessionID != null && !sessionRepo.exists(Example.of(headerSessionID))){
+                && headerSessionID != null && !sessionRepo.exists(Example.of(headerSessionID))){
             log.warn("Incorrect headerSessionID and sessionId provided: " + headerSessionID + " ," + sessionId + " !");
             throw invalidSession;
         }
-
-        List<Transaction> transactions = transactionServ.findByCategoryWithOffsetAndLimit(offset, limit, category);
-        for (Transaction tr: transactions){
-            log.info(tr.toString());
-        }
-        log.info("The 'GET /transactions' response has been sent!");
-        return transactions;
     }
 
-    @RequestMapping(value = "transactions/{transactionId}", method = RequestMethod.PUT)
-    public Transaction doPutTransaction(@PathVariable Long transactionId, @RequestBody Transaction requestTransaction)
-                                                                                        throws NoSuchIdForTransactionException {
-        Transaction transaction = null;
-        if (transactionRepo.existsById(transactionId)){
-            transaction = transactionRepo.findById(transactionId).get();
-            transaction.setCategory(categoryRepo.findByName("food & drinks"));
-            log.info("Transaction saved into the service: " + requestTransaction.toString());
-            return transactionRepo.save(transaction);
-        } else {
-            throw new NoSuchIdForTransactionException(transactionId);
-        }
-    }
 }
