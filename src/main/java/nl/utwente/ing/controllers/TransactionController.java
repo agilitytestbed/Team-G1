@@ -90,6 +90,7 @@ public class TransactionController {
         verifySessionId(sessionId, headerSessionID);
         RuntimeException transactionNotFound = new TransactionNotFoundException();
         if (transactionId == null){
+            log.warn("TransactionId is null !");
             throw transactionNotFound;
         }
         if (transactionRepo.findById(transactionId).isPresent()){
@@ -98,13 +99,15 @@ public class TransactionController {
             requestTransaction.setCategory(requestCategory == null || !categoryRepo.existsById(requestCategory.getId())
                     ? repoTransaction.getCategory() : requestCategory);
             requestTransaction.setId(repoTransaction.getId());
+            log.info("Transaction has been saved: " + requestTransaction);
             return transactionRepo.save(requestTransaction);
         } else{
+            log.warn("Transaction with Id: " + transactionId + " has not been found !");
             throw transactionNotFound;
         }
     }
 
-    @ExceptionHandler(value = HttpMessageNotReadableException.class)
+    @ExceptionHandler(value = {HttpMessageNotReadableException.class, NumberFormatException.class})
     @ResponseStatus(value = HttpStatus.METHOD_NOT_ALLOWED, reason = "Invalid input given")
     public void handleInvalidFormatException() {
     }
