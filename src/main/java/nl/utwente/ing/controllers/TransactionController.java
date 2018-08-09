@@ -59,6 +59,28 @@ public class TransactionController {
         return transactions;
     }
 
+    @RequestMapping(value = "transactions/{transactionId}", method = RequestMethod.GET)
+    public Transaction doGetTransaction(@PathVariable Long transactionId,
+                                 @RequestParam(value = "session_id", required = false) Session sessionId,
+                                 @RequestHeader(value = "X-session-ID", required = false) Session headerSessionID){
+        log.info("'GET /transactions/{" + transactionId + "}' has been requested ...");
+        verifySessionId(sessionId, headerSessionID);
+        RuntimeException transactionNotFound = new TransactionNotFoundException();
+        if (transactionId == null){
+            log.warn("TransactionId is null !");
+            throw transactionNotFound;
+        }
+        if (transactionRepo.findById(transactionId).isPresent()){
+            Transaction transaction = transactionRepo.findById(transactionId).get();
+            log.info(transaction.toString());
+            log.info("'GET /transactions/{" + transactionId + "}' response has been sent !" );
+            return transaction;
+        } else {
+            log.warn("Transaction with Id: " + transactionId + " has not been found !");
+            throw transactionNotFound;
+        }
+    }
+
     @RequestMapping(value = "/transactions/{transactionId}", method = RequestMethod.PUT)
     public Transaction doPutTransaction(@PathVariable Long transactionId, @RequestBody Transaction requestTransaction,
                                  @RequestParam(value = "session_id", required = false) Session sessionId,
