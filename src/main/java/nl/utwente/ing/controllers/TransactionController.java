@@ -59,6 +59,18 @@ public class TransactionController {
         return transactions;
     }
 
+    @RequestMapping(value = "/transactions", method = RequestMethod.POST)
+    public Transaction doPostTransactions(@RequestBody Transaction transaction,
+                                 @RequestParam(value = "session_id", required = false) Session sessionId,
+                                 @RequestHeader(value = "X-session-ID", required = false) Session headerSessionID){
+        log.info("'POST /transactions' has been requested: " + transaction);
+        verifySessionId(sessionId, headerSessionID);
+        transaction.setId(0); // Set the default value for the Id
+        Transaction result = transactionRepo.save(transaction);
+        log.info("The 'POST /transactions' response has been sent: " + result);
+        return result;
+    }
+
     @RequestMapping(value = "transactions/{transactionId}", method = RequestMethod.GET)
     public Transaction doGetTransaction(@PathVariable Long transactionId,
                                  @RequestParam(value = "session_id", required = false) Session sessionId,

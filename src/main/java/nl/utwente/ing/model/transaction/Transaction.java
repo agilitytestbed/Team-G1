@@ -2,9 +2,10 @@ package nl.utwente.ing.model.transaction;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
-import nl.utwente.ing.repository.CategoryRepository;
 import nl.utwente.ing.model.Category;
 import nl.utwente.ing.model.Session;
+import nl.utwente.ing.repository.CategoryRepository;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +27,7 @@ public class Transaction {
     private long id;
 
     @Column
+    @CreationTimestamp
     private LocalDateTime date;
 
     @Column
@@ -38,7 +40,7 @@ public class Transaction {
     private Type type;
 
     @ManyToOne//(fetch=FetchType.LAZY)
-    @JoinColumn(name = "category", nullable = false)
+    @JoinColumn(name = "category")
     private Category category;
 
     @JsonIgnore
