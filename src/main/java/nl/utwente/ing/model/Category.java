@@ -1,5 +1,6 @@
 package nl.utwente.ing.model;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import nl.utwente.ing.model.transaction.Transaction;
 
@@ -9,9 +10,11 @@ import java.util.Objects;
 
 @Entity
 public class Category {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "cid", updatable = false)
+    @JsonAlias("category_id")
     private long id;
 
     @Column

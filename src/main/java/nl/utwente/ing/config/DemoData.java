@@ -35,12 +35,8 @@ public class DemoData implements ApplicationRunner {
         log.info("Load initial data into the service...");
         TransactionGenerator transGen = new TransactionGenerator();
         Set<Category> categorySet = transGen.getCategorySet();
-        for (Category cat: categorySet){
-            categoryRepo.save(cat);
-        }
-        for (Transaction trans: transGen.getTransactions(bound)){
-            transactionRepo.save(trans);
-        }
+        categoryRepo.saveAll(categorySet);
+        transactionRepo.saveAll(transGen.getTransactions(bound));
         log.info("Finished loading the initial data!");
     }
 }

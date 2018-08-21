@@ -1,6 +1,7 @@
 package nl.utwente.ing.controllers;
 
 import nl.utwente.ing.exception.transaction.TransactionNotFoundException;
+import nl.utwente.ing.exception.transaction.TransactionOrCategoryNotFoundException;
 import nl.utwente.ing.repository.CategoryRepository;
 import nl.utwente.ing.repository.SessionRepository;
 import nl.utwente.ing.repository.TransactionRepository;
@@ -140,9 +141,35 @@ public class TransactionController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @ExceptionHandler(value = {HttpMessageNotReadableException.class, NumberFormatException.class})
+    @RequestMapping(value = "/transactions/{transactionId}/category", method = RequestMethod.PATCH)
+    public Transaction doPatchTransaction(@PathVariable Long transactionId,
+                                 @RequestBody Category category,
+                                 @RequestParam(value = "session_id", required = false) Session sessionId,
+                                 @RequestHeader(value = "X-session-ID", required = false) Session headerSessionID){
+        Session validSession = verifySessionId(sessionId, headerSessionID);
+        log.info("'PATCH /transactions/{" + transactionId + "}/category' has been requested ...");
+        log.info("with category: " + category);
+        Optional<Transaction> queryResponse = transactionRepo.findByIdAndSession(transactionId, validSession);
+        if (!queryResponse.isPresent()){
+            log.warn("Transaction with id '" + transactionId + "' has not been found !");
+            throw new TransactionOrCategoryNotFoundException();
+        }
+        Example<Category> catExample = Example.of(category);
+        if (!categoryRepo.exists(catExample)){
+            log.warn(category + " does not exist !");
+            throw new TransactionOrCategoryNotFoundException();
+        }
+        Transaction transaction = queryResponse.get();
+        transaction.setCategory(categoryRepo.findOne(catExample).get());
+        log.info("Transaction's category has been modified: " + transaction);
+        return transactionRepo.save(transaction);
+    }
+
+    @ExceptionHandler(value = HttpMessageNotReadableException.class)
     @ResponseStatus(value = HttpStatus.METHOD_NOT_ALLOWED, reason = "Invalid input given")
-    public void handleInvalidFormatException() {
+    public void handleInvalidFormatException(@RequestBody Exception invalidInput) {
+        log.warn(invalidInput.toString());
+        log.info("Invalid input given sent !");
     }
 
     private Session verifySessionId(Session sessionId, Session headerSessionID) {

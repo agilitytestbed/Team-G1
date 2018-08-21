@@ -53,6 +53,7 @@ public class Transaction {
     private Set<Session> session;
 
     public Transaction() {
+        this.session = new HashSet<>();
     }
 
     public Transaction(LocalDateTime date, double amount, String externalIBAN, Type type, Category category) {
