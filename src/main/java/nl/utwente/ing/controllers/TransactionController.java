@@ -67,8 +67,9 @@ public class TransactionController {
                                  @RequestParam(value = "session_id", required = false) Session sessionId,
                                  @RequestHeader(value = "X-session-ID", required = false) Session headerSessionID){
         log.info("'POST /transactions' has been requested: " + transaction);
-        verifySessionId(sessionId, headerSessionID);
+        Session verifiedSession = verifySessionId(sessionId, headerSessionID);
         transaction.setId(0); // Set the default value for the Id
+        transaction.setSession(verifiedSession);
         Transaction result = transactionRepo.save(transaction);
         log.info("The 'POST /transactions' response has been sent: " + result);
         return result;
