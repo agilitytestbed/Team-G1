@@ -126,7 +126,7 @@ public class TransactionController {
         }
     }
 
-    @RequestMapping(value = "/transactions/{transactionId}")
+    @RequestMapping(value = "/transactions/{transactionId}", method = RequestMethod.DELETE)
     public ResponseEntity doDeleteTransaction(@PathVariable Long transactionId,
                                  @RequestParam(value = "session_id", required = false) Session sessionId,
                                  @RequestHeader(value = "X-session-ID", required = false) Session headerSessionID){
