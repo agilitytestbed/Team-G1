@@ -19,12 +19,12 @@ public class SessionController {
 
     private TransactionRepository transactionRepo;
 
-    private SessionRepository sessionRepository;
+    private SessionRepository sessionRepo;
 
     @Autowired
     public SessionController(TransactionRepository transactionRepo, SessionRepository sessionRepository) {
         this.transactionRepo = transactionRepo;
-        this.sessionRepository = sessionRepository;
+        this.sessionRepo = sessionRepository;
     }
 
     private static final Logger log = LoggerFactory.getLogger(SessionController.class);
@@ -33,12 +33,13 @@ public class SessionController {
                    consumes = "application/json", produces = "application/json")
     public ResponseEntity doPostSessions(@RequestBody Session session){
         log.info("The session id is being set...");
+        sessionRepo.save(session);
         for (Transaction tr : transactionRepo.findAll()){
-            session.setTransaction(tr);
-            sessionRepository.save(session);
+            tr.setSession(session);
             transactionRepo.save(tr);
         }
-        log.info("The initial data now has the following sessionId: " + session);
+        log.info(sessionRepo.findById(session.getId()).get().toString());
+        log.info("The initial data now has the previously specified sessionId.");
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

@@ -16,7 +16,7 @@ public class Session {
     @Column(name = "sid")
     private String id;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinTable(
             name = "session_transaction",
             joinColumns = { @JoinColumn(name = "sid") },

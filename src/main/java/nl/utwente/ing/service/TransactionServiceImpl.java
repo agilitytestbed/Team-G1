@@ -45,7 +45,7 @@ public class TransactionServiceImpl implements TransactionService {
         if (category == null){
             return findWithOffsetAndLimit(offset, limit);
         } else {
-            return transactionRepo.findTransactionsByCategory(pageable, category);
+            return transactionRepo.findByCategory(pageable, category);
         }
 
     }

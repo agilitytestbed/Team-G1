@@ -43,8 +43,13 @@ public class Transaction {
     @JoinColumn(name = "category")
     private Category category;
 
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @JoinTable(
+            name = "session_transaction",
+            joinColumns = { @JoinColumn(name = "tid") },
+            inverseJoinColumns = { @JoinColumn(name = "sid") }
+    )
     @JsonIgnore
-    @ManyToMany(mappedBy = "transactions")
     private Set<Session> session;
 
     public Transaction() {

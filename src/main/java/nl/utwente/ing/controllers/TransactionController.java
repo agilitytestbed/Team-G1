@@ -14,10 +14,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class TransactionController {
@@ -119,12 +121,30 @@ public class TransactionController {
         }
     }
 
+    @RequestMapping(value = "/transactions/{transactionId}")
+    public ResponseEntity doDeleteTransaction(@PathVariable Long transactionId,
+                                 @RequestParam(value = "session_id", required = false) Session sessionId,
+                                 @RequestHeader(value = "X-session-ID", required = false) Session headerSessionID){
+        log.info("'DELETE /transactions/{" + transactionId + "}' has been requested ...");
+        Session validSession = verifySessionId(sessionId, headerSessionID);
+        Optional<Transaction> queryResponse = transactionRepo.findByIdAndSession(transactionId, validSession);
+        if (queryResponse.isPresent()){
+            Transaction transaction = queryResponse.get();
+            transactionRepo.delete(transaction);
+            log.info("Transaction has been deleted: " + transaction);
+        } else {
+            log.warn("Transaction with Id: " + transactionId + " has not been found!");
+            throw new TransactionNotFoundException();
+        }
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
     @ExceptionHandler(value = {HttpMessageNotReadableException.class, NumberFormatException.class})
     @ResponseStatus(value = HttpStatus.METHOD_NOT_ALLOWED, reason = "Invalid input given")
     public void handleInvalidFormatException() {
     }
 
-    private void verifySessionId(Session sessionId, Session headerSessionID) {
+    private Session verifySessionId(Session sessionId, Session headerSessionID) {
         RuntimeException invalidSession = new InvalidSessionIdException();
         if (sessionId == null && headerSessionID == null){
             log.warn("No sessionId provided !");
@@ -143,6 +163,7 @@ public class TransactionController {
             log.warn("Incorrect headerSessionID and sessionId provided: " + headerSessionID + " ," + sessionId + " !");
             throw invalidSession;
         }
+        return sessionId != null && sessionRepo.exists(Example.of(sessionId)) ? sessionId : headerSessionID;
     }
 
 }
