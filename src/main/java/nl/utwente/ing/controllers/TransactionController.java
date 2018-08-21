@@ -86,8 +86,9 @@ public class TransactionController {
             log.warn("TransactionId is null !");
             throw transactionNotFound;
         }
-        if (transactionRepo.findById(transactionId).isPresent()){
-            Transaction transaction = transactionRepo.findByIdAndSession(transactionId, validSession).get();
+        Optional<Transaction> queryRequest = transactionRepo.findByIdAndSession(transactionId, validSession);
+        if (queryRequest.isPresent()){
+            Transaction transaction = queryRequest.get();
             log.info(transaction.toString());
             log.info("'GET /transactions/{" + transactionId + "}' response has been sent !" );
             return transaction;
