@@ -117,6 +117,7 @@ public class TransactionController {
             requestTransaction.setCategory(requestCategory == null || !categoryRepo.existsById(requestCategory.getId())
                     ? repoTransaction.getCategory() : requestCategory);
             requestTransaction.setId(repoTransaction.getId());
+            requestTransaction.setSessions(repoTransaction.getSession());
             log.info("Transaction has been saved: " + requestTransaction);
             return transactionRepo.save(requestTransaction);
         } else{
