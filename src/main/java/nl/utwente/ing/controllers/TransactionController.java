@@ -73,19 +73,19 @@ public class TransactionController {
         return result;
     }
 
-    @RequestMapping(value = "transactions/{transactionId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/transactions/{transactionId}", method = RequestMethod.GET)
     public Transaction doGetTransaction(@PathVariable Long transactionId,
                                  @RequestParam(value = "session_id", required = false) Session sessionId,
                                  @RequestHeader(value = "X-session-ID", required = false) Session headerSessionID){
         log.info("'GET /transactions/{" + transactionId + "}' has been requested ...");
-        verifySessionId(sessionId, headerSessionID);
+        Session validSession = verifySessionId(sessionId, headerSessionID);
         RuntimeException transactionNotFound = new TransactionNotFoundException();
         if (transactionId == null){
             log.warn("TransactionId is null !");
             throw transactionNotFound;
         }
         if (transactionRepo.findById(transactionId).isPresent()){
-            Transaction transaction = transactionRepo.findById(transactionId).get();
+            Transaction transaction = transactionRepo.findByIdAndSession(transactionId, validSession).get();
             log.info(transaction.toString());
             log.info("'GET /transactions/{" + transactionId + "}' response has been sent !" );
             return transaction;
@@ -101,14 +101,15 @@ public class TransactionController {
                                  @RequestHeader(value = "X-session-ID", required = false) Session headerSessionID){
 
         log.info("'PUT /transactions/{" + transactionId + "}' has been requested ...");
-        verifySessionId(sessionId, headerSessionID);
+        Session validSession = verifySessionId(sessionId, headerSessionID);
         RuntimeException transactionNotFound = new TransactionNotFoundException();
         if (transactionId == null){
             log.warn("TransactionId is null !");
             throw transactionNotFound;
         }
-        if (transactionRepo.findById(transactionId).isPresent()){
-            Transaction repoTransaction = transactionRepo.findById(transactionId).get();
+        Optional<Transaction> queryResponse = transactionRepo.findByIdAndSession(transactionId, validSession);
+        if (queryResponse.isPresent()){
+            Transaction repoTransaction = queryResponse.get();
             Category requestCategory = requestTransaction.getCategory();
             requestTransaction.setCategory(requestCategory == null || !categoryRepo.existsById(requestCategory.getId())
                     ? repoTransaction.getCategory() : requestCategory);

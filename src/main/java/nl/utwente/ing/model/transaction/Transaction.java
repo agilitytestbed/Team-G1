@@ -78,7 +78,7 @@ public class Transaction {
         return session;
     }
 
-    public void setSession(Set<Session> session) {
+    public void setSessions(Set<Session> session) {
         this.session = session;
     }
 
